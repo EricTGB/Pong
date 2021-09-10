@@ -1,51 +1,56 @@
 package com.lowvoltagegames.pong;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.lowvoltagegames.pong.ai.AiObserver;
+import com.lowvoltagegames.pong.entity.GameObject;
+import com.lowvoltagegames.pong.entity.GraphicsComponent;
+import com.lowvoltagegames.pong.entity.PhysicsComponent;
+import com.lowvoltagegames.pong.entity.ball.Ball;
+import com.lowvoltagegames.pong.entity.ball.BallInput;
+import com.lowvoltagegames.pong.entity.ball.BallPhysics;
+import com.lowvoltagegames.pong.entity.generic.RectangleGraphics;
+import com.lowvoltagegames.pong.entity.paddle.AiPaddleInput;
+import com.lowvoltagegames.pong.entity.paddle.Paddle;
+import com.lowvoltagegames.pong.entity.paddle.PaddleInput;
+import com.lowvoltagegames.pong.entity.paddle.PaddlePhysics;
+
+import java.util.ArrayList;
 
 public class GameScreen implements Screen {
-    private final int PADDLE_SPEED = 500;
-    private final int PLAYER = 0;
-    private final int ENEMY = 1;
+    private final Pong game;
+    private final ArrayList<GameObject> objects;
+    private final AiObserver observer;
+    private final ShapeRenderer shape;
+    private final GraphicsComponent graphics;
 
-    final Pong game;
-
-    Texture paddleImage;
-    Texture ballImage;
-    Paddle[] paddles;
-    Ball ball;
-    AiPlayer ai;
-
-    float screenWidth;
-    float screenHeight;
+    public float width;
+    public float height;
 
     public GameScreen(final Pong game) {
         this.game = game;
 
-        screenHeight = Gdx.graphics.getHeight();
-        screenWidth = Gdx.graphics.getWidth();
+        this.shape = new ShapeRenderer();
+        this.objects = new ArrayList<>();
+        this.observer = new AiObserver();
 
-        paddles = new Paddle[2];
-        for (int i = 0; i < paddles.length; i++) {
-            paddles[i] = new Paddle();
-        }
-        ball = new Ball();
-        ai = new AiPlayer();
+        this.width = Gdx.graphics.getWidth();
+        this.height = Gdx.graphics.getHeight();
 
-        paddles[PLAYER].x = paddles[PLAYER].width * 4;
-        paddles[PLAYER].y = screenHeight / 2 - paddles[PLAYER].height / 2;
+        graphics = new RectangleGraphics();
+        PhysicsComponent paddlePhysics = new PaddlePhysics();
 
-        paddles[ENEMY].x = screenWidth - paddles[ENEMY].width * 5;
-        paddles[ENEMY].y = screenHeight / 2 - paddles[ENEMY].height / 2;
+        GameObject obj = new Paddle(new PaddleInput(), paddlePhysics, graphics);
+        addObject(obj, obj.width * 5, height / 2 - obj.height / 2);
 
-        ball.x = screenWidth / 2 - ball.width / 2;
-        ball.y = screenHeight / 2 - ball.height / 2;
+        obj = new Paddle(new AiPaddleInput(observer), paddlePhysics, graphics);
+        addObject(obj, width - obj.width * 5, height / 2 - obj.height / 2);
 
-        paddleImage = TextureUtils.rectangle(paddles[PLAYER]);
-        ballImage = TextureUtils.rectangle(ball);
+        obj = new Ball(new BallInput(), new BallPhysics(), graphics);
+        observer.attach(obj);
+        addObject(obj, width / 2 - obj.width / 2, height / 2 - obj.height / 2);
     }
 
     @Override
@@ -57,37 +62,15 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
 
-        game.batch.begin();
-        game.batch.draw(paddleImage, paddles[PLAYER].x, paddles[PLAYER].y);
-        game.batch.draw(paddleImage, paddles[ENEMY].x, paddles[ENEMY].y);
-        game.batch.draw(ballImage, ball.x, ball.y);
-        game.batch.end();
-
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            paddles[PLAYER].y += PADDLE_SPEED * delta;
-        } else if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            paddles[PLAYER].y -= PADDLE_SPEED * delta;
+        for (GameObject obj : objects) {
+            obj.update(this, delta);
         }
 
-        ai.movePaddle(delta, paddles[ENEMY], ball);
-
-        ball.updatePos(delta);
-
-        for (Paddle paddle : paddles) {
-            if (paddle.y + paddle.height > screenHeight) paddle.y = screenHeight - paddle.height;
-            if (paddle.y < 0) paddle.y = 0;
-            if (paddle.overlaps(ball)) ball.onHit(paddle);
+        shape.begin(ShapeRenderer.ShapeType.Filled);
+        for (GameObject obj : objects) {
+            obj.render(shape);
         }
-
-        if (ball.x <= 0 || ball.x >= screenWidth) {
-            ball.x = screenWidth / 2 - ball.width / 2;
-            ball.y = screenHeight / 2 - ball.height / 2;
-            ball.initAngle();
-        }
-
-        if (ball.y >= screenHeight || ball.y <= 0) {
-            ball.wallCollision();
-        }
+        shape.end();
     }
 
     @Override
@@ -112,8 +95,33 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        ballImage.dispose();
-        paddleImage.dispose();
+        shape.dispose();
+    }
+
+    public void resolveCollisions(GameObject obj1) {
+        for (GameObject obj2 : objects) {
+            if (obj1 != obj2) {
+                if (obj1.x < obj2.x + obj2.width &&
+                        obj1.x + obj1.width > obj2.x &&
+                        obj1.y < obj2.y + obj2.height &&
+                        obj1.y + obj1.height > obj2.y) {
+                    obj1.collision(obj2);
+                }
+            }
+        }
+    }
+
+    public void goalScored(GameObject ball) {
+        objects.remove(ball);
+        GameObject newBall = new Ball(new BallInput(), new BallPhysics(), graphics);
+        observer.attach(newBall);
+        addObject(newBall, width / 2 - newBall.width / 2, height / 2 - newBall.height / 2);
+    }
+
+    private void addObject(GameObject obj, float x, float y) {
+        obj.x = x;
+        obj.y = y;
+        objects.add(obj);
     }
 }
 

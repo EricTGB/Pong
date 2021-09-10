@@ -4,12 +4,9 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Pong extends Game {
-
-	public SpriteBatch batch;
 	
 	@Override
 	public void create () {
-		batch = new SpriteBatch();
 		this.setScreen(new GameScreen(this));
 	}
 
@@ -20,7 +17,6 @@ public class Pong extends Game {
 	
 	@Override
 	public void dispose () {
-		batch.dispose();
 	}
 
 }
