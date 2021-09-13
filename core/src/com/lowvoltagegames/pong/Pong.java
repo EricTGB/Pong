@@ -1,7 +1,6 @@
 package com.lowvoltagegames.pong;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Pong extends Game {
 	

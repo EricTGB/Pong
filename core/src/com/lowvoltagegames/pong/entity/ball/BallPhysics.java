@@ -6,6 +6,9 @@ import com.lowvoltagegames.pong.GameScreen;
 import com.lowvoltagegames.pong.entity.GameObject;
 import com.lowvoltagegames.pong.entity.PhysicsComponent;
 
+/**
+ * Physical behaviour of a ball object
+ */
 public class BallPhysics implements PhysicsComponent {
     private final float MIN_ANGLE = (float) (4 * Math.PI / 6);
     private final float MAX_ANGLE = (float) (8 * Math.PI / 6);
@@ -25,6 +28,12 @@ public class BallPhysics implements PhysicsComponent {
         vel.y = MathUtils.sin(angle);
     }
 
+    /**
+     * Move ball each tick
+     * @param obj GameObject to be updated.
+     * @param screen Current screen
+     * @param delta Time since last update in millis
+     */
     @Override
     public void update(GameObject obj, GameScreen screen, float delta) {
         dis.setZero().add(vel).scl(obj.velocity * delta);
@@ -48,6 +57,11 @@ public class BallPhysics implements PhysicsComponent {
         screen.resolveCollisions(obj);
     }
 
+    /**
+     * Handle collision with another object, if the object is a paddle the ball will bounce.
+     * @param obj GameObject handling collision
+     * @param collisionObj GameObject that has been collided with
+     */
     @Override
     public void collision(GameObject obj, GameObject collisionObj) {
         System.out.println("Collision with:  " + collisionObj.getClass());

@@ -8,6 +8,10 @@ import com.lowvoltagegames.pong.entity.InputComponent;
 public class PaddleInput implements InputComponent {
     private final int PADDLE_SPEED = 500;
 
+    /**
+     * Poll keyboard input and update paddle
+     * @param obj object to be updated
+     */
     public void update(GameObject obj) {
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
             obj.velocity = PADDLE_SPEED;

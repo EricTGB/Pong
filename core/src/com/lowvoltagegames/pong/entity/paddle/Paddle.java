@@ -5,6 +5,9 @@ import com.lowvoltagegames.pong.entity.GraphicsComponent;
 import com.lowvoltagegames.pong.entity.InputComponent;
 import com.lowvoltagegames.pong.entity.PhysicsComponent;
 
+/**
+ * GameObject representation of a paddle
+ */
 public class Paddle extends GameObject {
     private final float WIDTH = 16;
     private final float HEIGHT = 96;
