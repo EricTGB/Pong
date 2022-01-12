@@ -49,9 +49,9 @@ public class BallPhysics implements PhysicsComponent {
         }
 
         if (obj.x + obj.width > screen.width) {
-            screen.goalScored(obj);
+            screen.goalScoredRight(obj);
         } else if (obj.x < 0) {
-            screen.goalScored(obj);
+            screen.goalScoredLeft(obj);
         }
 
         screen.resolveCollisions(obj);
@@ -64,7 +64,7 @@ public class BallPhysics implements PhysicsComponent {
      */
     @Override
     public void collision(GameObject obj, GameObject collisionObj) {
-        System.out.println("Collision with:  " + collisionObj.getClass());
+        //System.out.println("Collision with:  " + collisionObj.getClass());
         float deltaY = (obj.y + obj.height / 2) - (collisionObj.y + collisionObj.height / 2);
         deltaY = deltaY / collisionObj.height + 0.5f; //normalise delta between 0 and 1
         angle = MAX_ANGLE - deltaY * (MAX_ANGLE - MIN_ANGLE);
@@ -72,6 +72,6 @@ public class BallPhysics implements PhysicsComponent {
         vel.x = MathUtils.cos(angle) * (vel.x / Math.abs(vel.x));
         vel.y = MathUtils.sin(angle);
 
-        obj.velocity = 500;
+        obj.velocity = 700;
     }
 }

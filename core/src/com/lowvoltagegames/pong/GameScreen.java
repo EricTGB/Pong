@@ -30,6 +30,9 @@ public class GameScreen implements Screen {
     private final GraphicsComponent graphics;
     private final NullInput nullInput;
 
+    public int player1Score = 0;
+    public int player2Score = 0;
+
     public float width;
     public float height;
 
@@ -84,6 +87,14 @@ public class GameScreen implements Screen {
             obj.render(shape);
         }
         shape.end();
+
+        game.batch.begin();
+
+        game.font.getData().setScale(3);
+        game.font.draw(game.batch, Integer.toString(player1Score), width / 4, height * 3 / 4);
+        game.font.draw(game.batch, Integer.toString(player2Score), width - width / 4, height * 3 / 4);
+
+        game.batch.end();
     }
 
     @Override
@@ -127,6 +138,26 @@ public class GameScreen implements Screen {
                 }
             }
         }
+    }
+
+    /**
+     * Handle goal scored on right side of screen
+     * @param ball Current ball
+     * @see GameScreen#goalScored(GameObject)
+     */
+    public void goalScoredRight(GameObject ball) {
+        player1Score++;
+        goalScored(ball);
+    }
+
+    /**
+     * Handle goal scored on left side of screen
+     * @param ball Current ball
+     * @see GameScreen#goalScored(GameObject)
+     */
+    public void goalScoredLeft(GameObject ball) {
+        player2Score++;
+        goalScored(ball);
     }
 
     /**

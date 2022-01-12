@@ -11,7 +11,7 @@ import com.lowvoltagegames.pong.entity.PhysicsComponent;
 public class Ball extends GameObject {
     private final float WIDTH = 8;
     private final float HEIGHT = 8;
-    private final float INITIAL_VELOCITY = 200;
+    private final float INITIAL_VELOCITY = 400;
 
     /**
      * Create a new ball with given components
